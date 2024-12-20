@@ -518,12 +518,13 @@ if __name__ == "__main__":
         if args.keys_path is None:
             print("No keys path provided for inverse nucleus sampling, generating english keys")
             tokenizer = transformers.AutoTokenizer.from_pretrained(args.model_used_for_key_generation)
+            pipeline_kwargs = {"device_map": "auto"}
+            if torch.cuda.is_available():
+                pipeline_kwargs["torch_dtype"] = torch.bfloat16
             pipeline = transformers.pipeline(
                 "text-generation",
                 model=args.model_used_for_key_generation,
-                model_kwargs={"torch_dtype": torch.bfloat16},
-                device_map="auto",
-                
+                **pipeline_kwargs,
                 )
 
             keys_path = generate_multiple_english_keys_to_cache(tokenizer, pipeline, args.num_fingerprints, args.key_length, args.response_length,
@@ -539,12 +540,16 @@ if __name__ == "__main__":
             print("WARNING : Provided inverse nucleus model but key_response_strategy is not inverse_nucleus, ignoring the model")
         
         tokenizer = transformers.AutoTokenizer.from_pretrained(args.model_used_for_key_generation)
+        pipeline_kwargs = {"device_map": "auto"}
+        
+        if torch.cuda.is_available():
+            pipeline_kwargs["torch_dtype"] = torch.bfloat16
+        
         pipeline = transformers.pipeline(
             "text-generation",
             model=args.model_used_for_key_generation,
-            model_kwargs={"torch_dtype": torch.bfloat16},
-            device_map="auto",            
-            )
+            **pipeline_kwargs,
+        )
 
         keys_path = generate_multiple_english_keys_to_cache(tokenizer, pipeline, args.num_fingerprints, args.key_length, args.response_length,
                                                 cache_path=args.output_file_path, temperature=args.temperature, batch_size=args.batch_size, first_token_strategy=args.first_token_strategy, key_response_strategy=args.key_response_strategy,
