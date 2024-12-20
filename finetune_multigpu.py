@@ -137,7 +137,7 @@ def finetune(model_path:str, model_size: str, num_fingerprints: int, max_key_len
         gradient_accumulation_steps = 1
     else:
         gradient_accumulation_steps = max(num_fingerprints // (batch_size * num_gpus), 1)  # TODO Make this customizable
-    
+
     if deepspeed_stage == 2:
         if num_gpus < 1:
             deepspeed_config = {
